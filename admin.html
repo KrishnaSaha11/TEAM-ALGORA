@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Campus Administration Console — Biju Patnaik University of Technology (BPUT)</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            univ: {
+              navy: '#0b2545',
+              blue: '#133b5c',
+              gold: '#c59b27',
+              accent: '#1d4ed8'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css">
+
+  <!-- Authentication Layer & Immediate Route Guard -->
+  <script src="js/auth.js"></script>
+  <script>
+    if (window.AuthService && !window.AuthService.requireAdmin()) {
+      // Immediate redirect executed
+    }
+  </script>
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col font-sans">
+
+  <!-- Shared Header Injection Container -->
+  <div id="institutional-header-slot"></div>
+
+  <!-- Admin Sub-Navigation Ribbon -->
+  <nav class="bg-slate-900 text-white shadow sticky top-0 z-40 px-4 sm:px-8 border-t border-amber-600/40">
+    <div class="max-w-7xl mx-auto flex items-center justify-between overflow-x-auto scrollbar-none py-1">
+      <div class="flex space-x-1 sm:space-x-2 text-xs font-medium whitespace-nowrap" id="admin-nav-tabs">
+        <button data-tab="overview" class="admin-tab-btn active px-3 py-2 rounded text-amber-300 bg-slate-800 flex items-center gap-1.5 transition">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+          <span>Executive Queue</span>
+        </button>
+        <button data-tab="gatepass" class="admin-tab-btn px-3 py-2 rounded text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-1.5 transition">
+          <i data-lucide="ticket" class="w-3.5 h-3.5"></i>
+          <span>Gate Passes</span>
+          <span id="tab-badge-passes" class="ml-1 px-1.5 py-0.2 bg-amber-500 text-slate-950 font-bold text-[10px] rounded-full">0</span>
+        </button>
+        <button data-tab="leave" class="admin-tab-btn px-3 py-2 rounded text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-1.5 transition">
+          <i data-lucide="calendar-check" class="w-3.5 h-3.5"></i>
+          <span>Leave Requests</span>
+          <span id="tab-badge-leaves" class="ml-1 px-1.5 py-0.2 bg-amber-500 text-slate-950 font-bold text-[10px] rounded-full">0</span>
+        </button>
+        <button data-tab="complaints" class="admin-tab-btn px-3 py-2 rounded text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-1.5 transition">
+          <i data-lucide="wrench" class="w-3.5 h-3.5"></i>
+          <span>Hostel Maintenance</span>
+          <span id="tab-badge-complaints" class="ml-1 px-1.5 py-0.2 bg-blue-500 text-white font-bold text-[10px] rounded-full">0</span>
+        </button>
+        <button data-tab="feequeries" class="admin-tab-btn px-3 py-2 rounded text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-1.5 transition">
+          <i data-lucide="help-circle" class="w-3.5 h-3.5"></i>
+          <span>Fee Queries</span>
+          <span id="tab-badge-feequeries" class="ml-1 px-1.5 py-0.2 bg-amber-500 text-slate-950 font-bold text-[10px] rounded-full">0</span>
+        </button>
+        <button data-tab="notices" class="admin-tab-btn px-3 py-2 rounded text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-1.5 transition">
+          <i data-lucide="bell" class="w-3.5 h-3.5"></i>
+          <span>Notice Desk</span>
+        </button>
+        <button data-tab="directory" class="admin-tab-btn px-3 py-2 rounded text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-1.5 transition">
+          <i data-lucide="users" class="w-3.5 h-3.5"></i>
+          <span>Student Directory</span>
+        </button>
+        <button data-tab="exams" class="admin-tab-btn px-3 py-2 rounded text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-1.5 transition">
+          <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+          <span>Exam Desk</span>
+        </button>
+      </div>
+
+      <div class="hidden md:flex items-center text-xs text-slate-300 bg-slate-800/90 px-2.5 py-1 rounded border border-slate-700">
+        <i data-lucide="shield-check" class="w-3.5 h-3.5 mr-1.5 text-amber-400"></i>
+        <span>Dean & Proctorial Console</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-8 py-6">
+
+    <!-- TAB 1: EXECUTIVE QUEUE (PRIORITIZING PENDING ACTIONS) -->
+    <section id="admin-tab-overview" class="admin-tab-pane space-y-6">
+      
+      <!-- Executive Header -->
+      <div class="univ-card p-6 bg-slate-900 text-white flex flex-col md:flex-row md:items-center justify-between gap-4 border-l-4 border-l-amber-500">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 px-2.5 py-0.5 rounded border border-amber-500/40">
+            Office of the Dean & Proctorial Board
+          </span>
+          <h2 class="text-xl sm:text-2xl font-bold font-institutional mt-1.5">University Administrative Desk</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Real-time approval queues, hostel dispatch, student inquiry ticketing & circular management</p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button onclick="AdminApp.openPublishNoticeModal()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-4 py-2 rounded flex items-center gap-1.5 shadow transition">
+            <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+            <span>Publish Notice</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Key Pending Action Counters -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="univ-card p-4 border-l-4 border-l-amber-500">
+          <p class="text-[11px] font-bold uppercase text-slate-500">Pending Gate Passes</p>
+          <p class="text-2xl font-extrabold text-amber-700 mt-1" id="stat-pending-passes">0</p>
+          <button onclick="AdminApp.switchTab('gatepass')" class="text-xs text-blue-900 font-semibold hover:underline mt-2 flex items-center gap-1">
+            <span>Review Passes</span> <i data-lucide="chevron-right" class="w-3 h-3"></i>
+          </button>
+        </div>
+
+        <div class="univ-card p-4 border-l-4 border-l-amber-500">
+          <p class="text-[11px] font-bold uppercase text-slate-500">Pending Leaves</p>
+          <p class="text-2xl font-extrabold text-amber-700 mt-1" id="stat-pending-leaves">0</p>
+          <button onclick="AdminApp.switchTab('leave')" class="text-xs text-blue-900 font-semibold hover:underline mt-2 flex items-center gap-1">
+            <span>Review Leaves</span> <i data-lucide="chevron-right" class="w-3 h-3"></i>
+          </button>
+        </div>
+
+        <div class="univ-card p-4 border-l-4 border-l-blue-600">
+          <p class="text-[11px] font-bold uppercase text-slate-500">Open Hostel Complaints</p>
+          <p class="text-2xl font-extrabold text-blue-700 mt-1" id="stat-open-complaints">0</p>
+          <button onclick="AdminApp.switchTab('complaints')" class="text-xs text-blue-900 font-semibold hover:underline mt-2 flex items-center gap-1">
+            <span>Dispatch Repairs</span> <i data-lucide="chevron-right" class="w-3 h-3"></i>
+          </button>
+        </div>
+
+        <div class="univ-card p-4 border-l-4 border-l-rose-500">
+          <p class="text-[11px] font-bold uppercase text-slate-500">Unanswered Fee Queries</p>
+          <p class="text-2xl font-extrabold text-rose-700 mt-1" id="stat-open-feequeries">0</p>
+          <button onclick="AdminApp.switchTab('feequeries')" class="text-xs text-blue-900 font-semibold hover:underline mt-2 flex items-center gap-1">
+            <span>Accounts Response</span> <i data-lucide="chevron-right" class="w-3 h-3"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Pending Actions Tables Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- Pending Gate Passes Queue -->
+        <div class="univ-card overflow-hidden">
+          <div class="univ-card-header flex items-center justify-between">
+            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="ticket" class="w-4 h-4 text-amber-600"></i> Urgent Gate Passes Awaiting Decision
+            </h4>
+            <button onclick="AdminApp.switchTab('gatepass')" class="text-xs text-blue-900 font-semibold hover:underline">View All</button>
+          </div>
+          <div id="overview-pending-passes-list" class="divide-y divide-slate-100 p-2">
+            <!-- Rendered by admin.js -->
+          </div>
+        </div>
+
+        <!-- Open Hostel Complaints Queue -->
+        <div class="univ-card overflow-hidden">
+          <div class="univ-card-header flex items-center justify-between">
+            <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="wrench" class="w-4 h-4 text-blue-700"></i> Active Hostel Maintenance Reports
+            </h4>
+            <button onclick="AdminApp.switchTab('complaints')" class="text-xs text-blue-900 font-semibold hover:underline">View All</button>
+          </div>
+          <div id="overview-pending-complaints-list" class="divide-y divide-slate-100 p-2">
+            <!-- Rendered by admin.js -->
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- TAB 2: GATE PASS APPROVALS DESK -->
+    <section id="admin-tab-gatepass" class="admin-tab-pane hidden space-y-6">
+      <div class="univ-card p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h3 class="font-institutional font-bold text-lg text-slate-900">Hostel Out-Pass Authorization Desk</h3>
+          <p class="text-xs text-slate-500 mt-1">Review student movement requests, authorize QR digital passes, or state rejection grounds.</p>
+        </div>
+      </div>
+
+      <div class="univ-card overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="univ-table" id="admin-gatepass-table">
+            <thead>
+              <tr>
+                <th>Pass ID</th>
+                <th>Student Roll & Name</th>
+                <th>Hostel & Room</th>
+                <th>Destination & Reason</th>
+                <th>Departure / Return</th>
+                <th>Status</th>
+                <th>Decisions / Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-gatepass-tbody">
+              <!-- Rendered by admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: LEAVE APPROVALS DESK -->
+    <section id="admin-tab-leave" class="admin-tab-pane hidden space-y-6">
+      <div class="univ-card p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h3 class="font-institutional font-bold text-lg text-slate-900">Academic & Medical Leave Sanction Desk</h3>
+          <p class="text-xs text-slate-500 mt-1">Dean (Academic Affairs) Review: Validate duty leave recommendations or medical records.</p>
+        </div>
+      </div>
+
+      <div class="univ-card overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="univ-table">
+            <thead>
+              <tr>
+                <th>Leave ID</th>
+                <th>Student</th>
+                <th>Type & Dates</th>
+                <th>Reason / Documentation</th>
+                <th>Status</th>
+                <th>Admin Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin-leave-tbody">
+              <!-- Rendered by admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: HOSTEL MAINTENANCE DESK (3-STAGE: Pending -> In Progress -> Resolved) -->
+    <section id="admin-tab-complaints" class="admin-tab-pane hidden space-y-6">
+      <div class="univ-card p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h3 class="font-institutional font-bold text-lg text-slate-900">Estate & Works Maintenance Desk</h3>
+          <p class="text-xs text-slate-500 mt-1">Manage 3-stage lifecycle: Pending → In Progress → Resolved with technician assignment.</p>
+        </div>
+      </div>
+
+      <div class="space-y-4" id="admin-complaints-container">
+        <!-- Rendered by admin.js -->
+      </div>
+    </section>
+
+    <!-- TAB 5: FEE QUERIES & ACCOUNTS DESK -->
+    <section id="admin-tab-feequeries" class="admin-tab-pane hidden space-y-6">
+      <div class="univ-card p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h3 class="font-institutional font-bold text-lg text-slate-900">Finance & Accounts Query Response Desk</h3>
+          <p class="text-xs text-slate-500 mt-1">Review student fee inquiries, issue demand estimates, and resolve ledger queries.</p>
+        </div>
+      </div>
+
+      <div class="space-y-4" id="admin-feequeries-container">
+        <!-- Rendered by admin.js -->
+      </div>
+    </section>
+
+    <!-- TAB 6: NOTICES DESK (ADD / EDIT / DELETE) -->
+    <section id="admin-tab-notices" class="admin-tab-pane hidden space-y-6">
+      <div class="univ-card p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h3 class="font-institutional font-bold text-lg text-slate-900">University Circulars & Notice Desk</h3>
+          <p class="text-xs text-slate-500 mt-1">Publish official institutional notices with target audience segmentation.</p>
+        </div>
+        <button onclick="AdminApp.openPublishNoticeModal()" class="bg-blue-900 hover:bg-blue-800 text-white font-semibold text-xs px-4 py-2.5 rounded shadow flex items-center gap-1.5 transition">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>Draft & Publish Notice</span>
+        </button>
+      </div>
+
+      <div class="space-y-3" id="admin-notices-container">
+        <!-- Rendered by admin.js -->
+      </div>
+    </section>
+
+    <!-- TAB 7: ENROLLED STUDENT DIRECTORY -->
+    <section id="admin-tab-directory" class="admin-tab-pane hidden space-y-6">
+      <div class="univ-card p-6 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <h3 class="font-institutional font-bold text-lg text-slate-900">Enrolled Student Registry</h3>
+            <span id="supabase-db-badge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Supabase DB Ready</span>
+            </span>
+          </div>
+          <p class="text-xs text-slate-500">Live PostgreSQL cloud registry mapped to BPUT Admission Cell database.</p>
+        </div>
+
+        <!-- Supabase Control Actions -->
+        <div class="flex flex-wrap items-center gap-2.5">
+          <button onclick="AdminApp.syncToSupabase()" id="btn-sync-supabase" class="bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs px-3.5 py-2 rounded shadow flex items-center gap-1.5 transition">
+            <i data-lucide="cloud-upload" class="w-4 h-4"></i>
+            <span id="sync-supabase-btn-text">Push to Supabase</span>
+          </button>
+          <button onclick="AdminApp.openSupabaseConfigModal()" class="bg-slate-800 hover:bg-slate-900 text-amber-300 font-semibold text-xs px-3.5 py-2 rounded shadow flex items-center gap-1.5 transition border border-slate-700">
+            <i data-lucide="database" class="w-4 h-4"></i>
+            <span>Supabase Setup & SQL</span>
+          </button>
+          <button onclick="AdminApp.renderStudentDirectory()" class="bg-white hover:bg-slate-100 text-slate-700 font-semibold text-xs px-3 py-2 rounded border border-slate-300 flex items-center gap-1.5 transition" title="Refresh list">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span>Refresh</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Cloud DB Status Alert -->
+      <div id="supabase-status-banner" class="bg-slate-900 text-white p-4 rounded-xl shadow-sm border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-mono font-bold shrink-0">
+            <i data-lucide="layers" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-white">Hybrid Database Engine</span>
+              <span class="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-400/30">PostgreSQL Schema Ready</span>
+            </div>
+            <p id="supabase-banner-text" class="text-slate-300 text-[11px] mt-0.5">
+              10 pre-enrolled undergraduate records active. Default passwords correspond to verified JEE Registration Numbers.
+            </p>
+          </div>
+        </div>
+        <div class="shrink-0 flex items-center gap-2 text-[11px] font-mono text-emerald-400 bg-emerald-950/60 px-3 py-1.5 rounded-lg border border-emerald-800/60">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+          <span id="supabase-record-count">10 Students Active</span>
+        </div>
+      </div>
+
+      <div class="univ-card overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="univ-table">
+            <thead>
+              <tr>
+                <th>College Roll No</th>
+                <th>Student Full Name</th>
+                <th>JEE Reg No (Password)</th>
+                <th>Department & Branch</th>
+                <th>Semester & Section</th>
+                <th>Hostel / Residence</th>
+                <th>Database Source</th>
+              </tr>
+            </thead>
+            <tbody id="admin-directory-tbody">
+              <!-- Rendered by admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 8: EXAMINATION DESK -->
+    <section id="admin-tab-exams" class="admin-tab-pane hidden space-y-6">
+      <div class="univ-card p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h3 class="font-institutional font-bold text-lg text-slate-900">Examination Cell Schedule Manager</h3>
+          <p class="text-xs text-slate-500 mt-1">Manage Mid-Sem and End-Sem datesheets, portions, and exam halls</p>
+        </div>
+        <button onclick="AdminApp.openAddExamModal()" class="bg-blue-900 hover:bg-blue-800 text-white font-semibold text-xs px-4 py-2.5 rounded shadow flex items-center gap-1.5 transition">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>Add Exam Schedule</span>
+        </button>
+      </div>
+
+      <div class="univ-card overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="univ-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Time Window</th>
+                <th>Course Code</th>
+                <th>Subject Name</th>
+                <th>Allocated Exam Hall</th>
+              </tr>
+            </thead>
+            <tbody id="admin-exams-tbody">
+              <!-- Rendered by admin.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      AdminApp.init();
+    });
+  </script>
+</body>
+</html>

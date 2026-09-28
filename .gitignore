@@ -1,0 +1,22 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Server (not needed for GitHub Pages)
+server.js
+
+# Environment / secrets
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+*.log
